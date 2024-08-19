@@ -59,14 +59,21 @@ public class UserValidator {
             throw new ClientException("Call number cannot be empty");
         }
 
-        if (!callNumber.startsWith("0") && !callNumber.startsWith("+62")) {
-            throw new ClientException("Call number must start with 0 or +62");
-        }
-
+        // Menghapus semua karakter non-digit untuk validasi panjang
         String numericCallNumber = callNumber.replaceAll("\\D", "");
 
-        if (numericCallNumber.length() < 9 || numericCallNumber.length() > 12) {
-            throw new ClientException("Call number must be between 9 to 12 digits");
+        if (callNumber.startsWith("0")) {
+            // Validasi jika diawali dengan '0'
+            if (numericCallNumber.length() < 9 || numericCallNumber.length() > 12) {
+                throw new ClientException("Call number must be between 9 to 12 digits when starting with 0");
+            }
+        } else if (callNumber.startsWith("+62")) {
+            // Validasi jika diawali dengan '+62'
+            if (numericCallNumber.length() < 10 || numericCallNumber.length() > 13) {
+                throw new ClientException("Call number must have 12 digits when starting with +62");
+            }
+        } else {
+            throw new ClientException("Call number must start with 0 or +62");
         }
     }
 
