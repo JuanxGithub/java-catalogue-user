@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Service
 public class UserService implements Serializable {
@@ -35,10 +36,7 @@ public class UserService implements Serializable {
         userValidator.nullCheckCallNumberId(userModel.getCallNumber());
         userValidator.validateCallNumberId(userModel.getCallNumber());
 
-        Long count = userRepository.countByFullName(userModel.getFullName());
-        if (count > 0) {
-            throw new ClientException("User name is already existed");
-        }
+        validateUniqueField("User name", userModel.getFullName(), () -> userRepository.countByFullName(userModel.getFullName()));
 
         UserEntity user = new UserEntity();
         user.setFullName(userModel.getFullName());
@@ -52,18 +50,18 @@ public class UserService implements Serializable {
     }
 
     public List<UserEntity> doGetAllUsers() {
-        List<UserEntity> users = new ArrayList<>();
-        userRepository.findAll().forEach(users::add);
+        List<UserEntity> userEntities = new ArrayList<>();
+        userRepository.findAll().forEach(userEntities::add);
 
-        return users;
+        return userEntities;
     }
 
     public List<UserEntity> doSearchByCriteria(UserModel userModel){
-        List<UserEntity> productEntities = new ArrayList<>();
+        List<UserEntity> userEntities = new ArrayList<>();
         UserSpec spec = new UserSpec(userModel);
-        userRepository.findAll(spec).forEach(productEntities::add);
+        userRepository.findAll(spec).forEach(userEntities::add);
 
-        return productEntities;
+        return userEntities;
     }
 
     public UserEntity findById(Integer id) throws ClientException, NotFoundException {
@@ -133,4 +131,12 @@ public class UserService implements Serializable {
         return user;
 
     }
+
+    public void validateUniqueField(String fieldName, String fieldValue, Supplier<Long> countFunction) throws ClientException {
+        Long count = countFunction.get();
+        if (count > 0) {
+            throw new ClientException(fieldName + " already exists");
+        }
+    }
+
 }

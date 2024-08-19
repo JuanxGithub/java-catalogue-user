@@ -5,6 +5,7 @@ import co.id.nds.catalogue.catalogue.exceptions.NotFoundException;
 import co.id.nds.catalogue.catalogue.globals.GlobalConstant;
 
 public class UserValidator {
+
     public void nullCheckUserId(Integer id) throws ClientException {
         if (id == null) {
             throw new ClientException("User id is required");
@@ -60,6 +61,12 @@ public class UserValidator {
 
         if (!callNumber.startsWith("0") && !callNumber.startsWith("+62")) {
             throw new ClientException("Call number must start with 0 or +62");
+        }
+
+        String numericCallNumber = callNumber.replaceAll("\\D", "");
+
+        if (numericCallNumber.length() < 9 || numericCallNumber.length() > 12) {
+            throw new ClientException("Call number must be between 9 to 12 digits");
         }
     }
 
